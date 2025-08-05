@@ -1,0 +1,19 @@
+# 百度API配置示例文件
+# 请复制此文件为 local.properties 并填入你的实际API密钥
+
+# 百度OCR API配置
+# 在百度智能云控制台 -> 文字识别OCR -> 应用列表中获取
+baidu.ocr.api.key=你的OCR_API_KEY
+baidu.ocr.secret.key=你的OCR_SECRET_KEY
+
+# 百度语音识别API配置  
+# 在百度智能云控制台 -> 语音技术 -> 语音识别 -> 应用列表中获取
+baidu.speech.app.id=你的SPEECH_APP_ID
+baidu.speech.api.key=你的SPEECH_API_KEY
+baidu.speech.secret.key=你的SPEECH_SECRET_KEY
+
+# 注意事项：
+# 1. 请将此文件复制为 local.properties
+# 2. 填入你从百度智能云获取的实际API密钥
+# 3. local.properties 文件不会被提交到Git仓库（已在.gitignore中配置）
+# 4. 请妥善保管你的API密钥，不要泄露给他人
