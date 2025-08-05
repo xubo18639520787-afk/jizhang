@@ -140,7 +140,13 @@ dependencies {
     implementation("androidx.datastore:datastore-preferences:1.0.0")
     
     // 百度OCR SDK
-    implementation("com.baidu.aip:java-sdk:4.16.8")
+    implementation("com.baidu.aip:java-sdk:4.16.8") {
+        exclude(group = "com.google.guava", module = "guava")
+        exclude(group = "com.google.guava", module = "listenablefuture")
+    }
+    
+    // 解决Guava依赖冲突
+    implementation("com.google.guava:guava:31.1-android")
     
     // HTTP Client for API calls
     implementation("com.squareup.retrofit2:retrofit:2.9.0")
