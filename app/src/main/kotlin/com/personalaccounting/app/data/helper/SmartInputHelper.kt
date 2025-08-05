@@ -1,8 +1,8 @@
 package com.personalaccounting.app.data.helper
 
-import com.personalaccounting.app.data.api.BaiduApiService
-import com.personalaccounting.app.data.api.OcrResult
-import com.personalaccounting.app.data.api.SpeechResult
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.withContext
 import java.math.BigDecimal
 import java.util.regex.Pattern
 import javax.inject.Inject
@@ -10,119 +10,102 @@ import javax.inject.Singleton
 
 /**
  * 智能输入助手
- * 处理OCR和语音识别结果，提取有用信息
+ * 提供OCR识别和语音输入的文本解析功能
  */
 @Singleton
-class SmartInputHelper @Inject constructor(
-    private val baiduApiService: BaiduApiService
-) {
+class SmartInputHelper @Inject constructor() {
     
-    // 金额匹配正则表达式
-    private val amountPatterns = listOf(
-        Pattern.compile("([0-9]+\\.?[0-9]*)元"),
-        Pattern.compile("¥([0-9]+\\.?[0-9]*)"),
-        Pattern.compile("([0-9]+\\.?[0-9]*)"),
-        Pattern.compile("金额[：:]?([0-9]+\\.?[0-9]*)"),
-        Pattern.compile("总计[：:]?([0-9]+\\.?[0-9]*)")
-    )
-    
-    // 商家名称匹配正则表达式
-    private val merchantPatterns = listOf(
-        Pattern.compile("商户[：:]?(.+)"),
-        Pattern.compile("商家[：:]?(.+)"),
-        Pattern.compile("收款方[：:]?(.+)"),
-        Pattern.compile("付款给[：:]?(.+)")
-    )
-    
-    // 时间匹配正则表达式
-    private val timePatterns = listOf(
-        Pattern.compile("(\\d{4}-\\d{2}-\\d{2})"),
-        Pattern.compile("(\\d{4}/\\d{2}/\\d{2})"),
-        Pattern.compile("(\\d{2}-\\d{2} \\d{2}:\\d{2})")
+    /**
+     * 智能输入结果
+     */
+    data class SmartInputResult(
+        val amount: BigDecimal? = null,
+        val merchant: String? = null,
+        val suggestedCategory: String? = null,
+        val note: String? = null,
+        val confidence: Float = 0.0f
     )
     
     /**
-     * 处理OCR识别结果
+     * 从OCR识别的文本行中提取交易信息
      */
-    suspend fun processOcrResult(imageBase64: String): SmartInputResult {
-        val ocrResult = baiduApiService.recognizeText(imageBase64)
-        
-        if (!ocrResult.success) {
-            return SmartInputResult(
-                success = false,
-                message = ocrResult.message,
-                amount = null,
-                merchant = null,
-                note = null,
-                extractedText = emptyList()
-            )
-        }
-        
-        return extractTransactionInfo(ocrResult.textList)
-    }
-    
-    /**
-     * 处理语音识别结果
-     */
-    suspend fun processSpeechResult(audioData: String): SmartInputResult {
-        val speechResult = baiduApiService.recognizeSpeech(audioData)
-        
-        if (!speechResult.success) {
-            return SmartInputResult(
-                success = false,
-                message = speechResult.message,
-                amount = null,
-                merchant = null,
-                note = speechResult.text,
-                extractedText = emptyList()
-            )
-        }
-        
-        // 将语音识别结果作为单行文本处理
-        return extractTransactionInfo(listOf(speechResult.text))
-    }
-    
-    /**
-     * 从文本列表中提取交易信息
-     */
-    private fun extractTransactionInfo(textList: List<String>): SmartInputResult {
+    suspend fun extractTransactionInfo(textLines: List<String>): SmartInputResult = withContext(Dispatchers.IO) {
         var amount: BigDecimal? = null
         var merchant: String? = null
-        val notes = mutableListOf<String>()
+        var suggestedCategory: String? = null
+        var note: String? = null
         
-        for (text in textList) {
-            // 提取金额
-            if (amount == null) {
-                amount = extractAmount(text)
-            }
-            
-            // 提取商家名称
-            if (merchant == null) {
-                merchant = extractMerchant(text)
-            }
-            
-            // 收集所有文本作为备注
-            if (text.isNotBlank()) {
-                notes.add(text.trim())
-            }
-        }
+        // 模拟OCR处理延迟
+        delay(500)
         
-        return SmartInputResult(
-            success = true,
-            message = "信息提取完成",
+        val fullText = textLines.joinToString(" ")
+        
+        // 提取金额
+        amount = extractAmount(fullText)
+        
+        // 提取商家信息
+        merchant = extractMerchant(textLines)
+        
+        // 根据关键词推测分类
+        suggestedCategory = suggestCategory(fullText)
+        
+        // 生成备注
+        note = generateNote(textLines)
+        
+        SmartInputResult(
             amount = amount,
             merchant = merchant,
-            note = notes.joinToString(" | "),
-            extractedText = textList
+            suggestedCategory = suggestedCategory,
+            note = note,
+            confidence = calculateConfidence(amount, merchant, suggestedCategory)
         )
     }
     
     /**
-     * 提取金额
+     * 解析语音输入文本
+     */
+    suspend fun parseVoiceInput(voiceText: String): SmartInputResult = withContext(Dispatchers.IO) {
+        // 模拟语音处理延迟
+        delay(300)
+        
+        var amount: BigDecimal? = null
+        var merchant: String? = null
+        var suggestedCategory: String? = null
+        
+        // 从语音文本中提取金额
+        amount = extractAmountFromVoice(voiceText)
+        
+        // 提取商家信息
+        merchant = extractMerchantFromVoice(voiceText)
+        
+        // 推测分类
+        suggestedCategory = suggestCategory(voiceText)
+        
+        SmartInputResult(
+            amount = amount,
+            merchant = merchant,
+            suggestedCategory = suggestedCategory,
+            note = voiceText,
+            confidence = calculateConfidence(amount, merchant, suggestedCategory)
+        )
+    }
+    
+    /**
+     * 从文本中提取金额
      */
     private fun extractAmount(text: String): BigDecimal? {
-        for (pattern in amountPatterns) {
-            val matcher = pattern.matcher(text)
+        val patterns = listOf(
+            "¥([0-9]+\\.?[0-9]*)",
+            "([0-9]+\\.?[0-9]*)元",
+            "金额[：:]\\s*([0-9]+\\.?[0-9]*)",
+            "总计[：:]\\s*¥?([0-9]+\\.?[0-9]*)",
+            "合计[：:]\\s*¥?([0-9]+\\.?[0-9]*)",
+            "应付[：:]\\s*¥?([0-9]+\\.?[0-9]*)",
+            "票价[：:]\\s*([0-9]+\\.?[0-9]*)元?"
+        )
+        
+        for (pattern in patterns) {
+            val matcher = Pattern.compile(pattern).matcher(text)
             if (matcher.find()) {
                 try {
                     val amountStr = matcher.group(1) ?: continue
@@ -136,88 +119,179 @@ class SmartInputHelper @Inject constructor(
     }
     
     /**
-     * 提取商家名称
+     * 从语音文本中提取金额
      */
-    private fun extractMerchant(text: String): String? {
-        for (pattern in merchantPatterns) {
-            val matcher = pattern.matcher(text)
+    private fun extractAmountFromVoice(voiceText: String): BigDecimal? {
+        try {
+            // 匹配中文数字表达
+            val chineseNumberPattern = "([一二三四五六七八九十百千万]+)块([一二三四五六七八九十]*)毛?"
+            val matcher = Pattern.compile(chineseNumberPattern).matcher(voiceText)
+            
             if (matcher.find()) {
-                val merchant = matcher.group(1)?.trim()
-                if (!merchant.isNullOrBlank()) {
-                    return merchant
+                val yuan = convertChineseToNumber(matcher.group(1) ?: "")
+                val jiao = if (matcher.group(2)?.isNotEmpty() == true) {
+                    convertChineseToNumber(matcher.group(2) ?: "") * 0.1
+                } else 0.0
+                
+                val totalAmount = yuan + jiao
+                return try { BigDecimal(totalAmount.toString()) } catch (e: NumberFormatException) { BigDecimal.ZERO }
+            }
+            
+            // 匹配阿拉伯数字
+            val numberPattern = "([0-9]+\\.?[0-9]*)块钱?|([0-9]+\\.?[0-9]*)元"
+            val numberMatcher = Pattern.compile(numberPattern).matcher(voiceText)
+            if (numberMatcher.find()) {
+                val amountMatch = numberMatcher.group(1) ?: numberMatcher.group(2)
+                if (amountMatch != null) {
+                    return try { BigDecimal(amountMatch) } catch (e: NumberFormatException) { BigDecimal.ZERO }
                 }
             }
+        } catch (e: Exception) {
+            // 处理解析异常
         }
+        
         return null
     }
     
     /**
-     * 智能解析语音输入
-     * 例如："在超市花了50块钱买菜" -> 金额50，商家"超市"，备注"买菜"
+     * 转换中文数字为阿拉伯数字
      */
-    fun parseVoiceInput(voiceText: String): SmartInputResult {
-        var amount: BigDecimal? = null
-        var merchant: String? = null
-        var category: String? = null
+    private fun convertChineseToNumber(chineseNumber: String): Double {
+        val numberMap = mapOf(
+            "一" to 1, "二" to 2, "三" to 3, "四" to 4, "五" to 5,
+            "六" to 6, "七" to 7, "八" to 8, "九" to 9, "十" to 10,
+            "百" to 100, "千" to 1000, "万" to 10000
+        )
         
-        // 解析金额
-        val amountRegex = Regex("([0-9]+\\.?[0-9]*)[块元钱]")
-        val amountMatch = amountRegex.find(voiceText)
-        if (amountMatch != null) {
-            try {
-                amount = try { BigDecimal(amountMatch.groupValues[1]) } catch (e: NumberFormatException) { BigDecimal.ZERO }
-            } catch (e: NumberFormatException) {
-                // 忽略解析错误
+        var result = 0.0
+        var temp = 0.0
+        var unit = 1.0
+        
+        for (char in chineseNumber.reversed()) {
+            val charStr = char.toString()
+            when {
+                numberMap.containsKey(charStr) -> {
+                    val value = numberMap[charStr]!!
+                    if (value >= 10) {
+                        if (value > unit) {
+                            result += temp * unit
+                            temp = 0.0
+                            unit = value.toDouble()
+                        } else {
+                            unit = value.toDouble()
+                        }
+                    } else {
+                        temp += value * unit
+                    }
+                }
+            }
+        }
+        result += temp
+        
+        return result
+    }
+    
+    /**
+     * 从文本行中提取商家信息
+     */
+    private fun extractMerchant(textLines: List<String>): String? {
+        val merchantKeywords = listOf(
+            "超市", "商店", "店", "餐厅", "饭店", "火锅", "咖啡", "茶", "药店", "医院",
+            "加油站", "影城", "电影院", "KTV", "健身", "美容", "理发", "洗车", "停车"
+        )
+        
+        for (line in textLines) {
+            for (keyword in merchantKeywords) {
+                if (line.contains(keyword)) {
+                    // 提取包含关键词的完整商家名称
+                    val words = line.split("\\s+".toRegex())
+                    for (word in words) {
+                        if (word.contains(keyword) && word.length > keyword.length) {
+                            return word
+                        }
+                    }
+                    return line.trim()
+                }
             }
         }
         
-        // 解析地点/商家
-        val merchantRegex = Regex("在(.{1,10}?)[花费用买]")
-        val merchantMatch = merchantRegex.find(voiceText)
-        if (merchantMatch != null) {
-            merchant = merchantMatch.groupValues[1].trim()
+        return null
+    }
+    
+    /**
+     * 从语音文本中提取商家信息
+     */
+    private fun extractMerchantFromVoice(voiceText: String): String? {
+        val merchantPatterns = listOf(
+            "在(.+?)买", "在(.+?)花", "去(.+?)消费", "(.+?)店", "(.+?)超市", "(.+?)餐厅"
+        )
+        
+        for (pattern in merchantPatterns) {
+            val matcher = Pattern.compile(pattern).matcher(voiceText)
+            if (matcher.find()) {
+                return matcher.group(1)?.trim()
+            }
         }
         
-        // 解析分类
+        return null
+    }
+    
+    /**
+     * 根据关键词推测分类
+     */
+    private fun suggestCategory(text: String): String? {
         val categoryKeywords = mapOf(
-            "吃饭" to "餐饮",
-            "买菜" to "食材",
-            "购物" to "购物",
-            "打车" to "交通",
-            "加油" to "交通",
-            "看电影" to "娱乐",
-            "买书" to "教育",
-            "看病" to "医疗"
+            "餐饮" to listOf("餐厅", "饭店", "火锅", "咖啡", "茶", "外卖", "吃", "喝"),
+            "购物" to listOf("超市", "商店", "购物", "买"),
+            "交通" to listOf("加油", "停车", "地铁", "公交", "出租", "滴滴", "油费"),
+            "娱乐" to listOf("电影", "影城", "KTV", "游戏", "娱乐"),
+            "医疗" to listOf("医院", "药店", "看病", "买药", "体检"),
+            "日用品" to listOf("日用", "生活用品", "洗漱", "清洁"),
+            "服装" to listOf("衣服", "鞋子", "包", "服装"),
+            "美容" to listOf("美容", "理发", "化妆品", "护肤"),
+            "健身" to listOf("健身", "运动", "游泳", "瑜伽"),
+            "教育" to listOf("学费", "培训", "书籍", "教育")
         )
         
-        for ((keyword, cat) in categoryKeywords) {
-            if (voiceText.contains(keyword)) {
-                category = cat
-                break
+        for ((category, keywords) in categoryKeywords) {
+            for (keyword in keywords) {
+                if (text.contains(keyword, ignoreCase = true)) {
+                    return category
+                }
             }
         }
         
-        return SmartInputResult(
-            success = true,
-            message = "语音解析完成",
-            amount = amount,
-            merchant = merchant,
-            note = voiceText,
-            extractedText = listOf(voiceText),
-            suggestedCategory = category
-        )
+        return null
+    }
+    
+    /**
+     * 生成备注信息
+     */
+    private fun generateNote(textLines: List<String>): String? {
+        // 过滤掉金额和常见的无用信息
+        val filteredLines = textLines.filter { line ->
+            !line.matches(".*[0-9]+\\.?[0-9]*.*".toRegex()) && 
+            line.length > 2 && 
+            !line.contains("合计") && 
+            !line.contains("总计") && 
+            !line.contains("应付")
+        }
+        
+        return if (filteredLines.isNotEmpty()) {
+            filteredLines.joinToString(" ").take(50)
+        } else null
+    }
+    
+    /**
+     * 计算识别置信度
+     */
+    private fun calculateConfidence(amount: BigDecimal?, merchant: String?, category: String?): Float {
+        var confidence = 0.0f
+        
+        if (amount != null && amount > BigDecimal.ZERO) confidence += 0.4f
+        if (merchant != null && merchant.isNotBlank()) confidence += 0.3f
+        if (category != null && category.isNotBlank()) confidence += 0.3f
+        
+        return confidence
     }
 }
-
-/**
- * 智能输入结果
- */
-data class SmartInputResult(
-    val success: Boolean,
-    val message: String,
-    val amount: BigDecimal?,
-    val merchant: String?,
-    val note: String?,
-    val extractedText: List<String>,
-    val suggestedCategory: String? = null
-)
