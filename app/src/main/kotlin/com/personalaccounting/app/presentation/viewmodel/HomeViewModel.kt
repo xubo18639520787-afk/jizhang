@@ -61,16 +61,16 @@ class HomeViewModel @Inject constructor(
                 // 获取数据流
                 combine(
                     transactionRepository.getTransactionsByDateRange(startOfMonth, endOfMonth),
-                    transactionRepository.getRecentTransactions(10),
+                    transactionRepository.getAllTransactions(),
                     accountRepository.getAllAccounts(),
                     categoryRepository.getAllCategories()
-                ) { monthlyTransactions, recentTransactions, accounts, categories ->
+                ) { monthlyTransactions, allTransactions, accounts, categories ->
                     
                     val accountMap = accounts.associate { it.id to it.toDomain() }
                     val categoryMap = categories.associate { it.id to it.toDomain() }
                     
                     // 转换最近交易
-                    val recentTransactionsList = recentTransactions.mapNotNull { transaction ->
+                    val recentTransactionsList = allTransactions.sortedByDescending { it.date }.take(10).mapNotNull { transaction ->
                         val account = accountMap[transaction.accountId]
                         val category = categoryMap[transaction.categoryId]
                         if (account != null && category != null) {
