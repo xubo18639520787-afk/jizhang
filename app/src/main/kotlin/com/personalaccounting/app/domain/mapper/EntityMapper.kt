@@ -19,7 +19,7 @@ fun TransactionEntity.toDomain(account: Account, category: Category): Transactio
         category = category,
         date = date,
         note = note,
-        tags = tags,
+        tags = if (tags.isBlank()) emptyList() else tags.split(","),
         createdAt = createdAt,
         updatedAt = updatedAt
     )
@@ -34,7 +34,7 @@ fun Transaction.toEntity(): TransactionEntity {
         categoryId = category.id,
         date = date,
         note = note,
-        tags = tags,
+        tags = tags.joinToString(","),
         createdAt = createdAt,
         updatedAt = updatedAt
     )
