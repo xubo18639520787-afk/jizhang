@@ -54,6 +54,15 @@ jobs:
     - name: 构建 Debug APK
       run: ./gradlew assembleDebug
 
+    - name: 创建local.properties文件
+      run: |
+        echo "# 构建时使用的临时配置" > local.properties
+        echo "baidu.ocr.api.key=" >> local.properties
+        echo "baidu.ocr.secret.key=" >> local.properties
+        echo "baidu.speech.app.id=" >> local.properties
+        echo "baidu.speech.api.key=" >> local.properties
+        echo "baidu.speech.secret.key=" >> local.properties
+
     - name: 构建 Release APK
       run: ./gradlew assembleRelease
 

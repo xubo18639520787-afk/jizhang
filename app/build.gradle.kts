@@ -39,7 +39,7 @@ android {
         buildConfigField("String", "BAIDU_SPEECH_SECRET_KEY", "\"${localProperties.getProperty("baidu.speech.secret.key", "")}\"")
     }
 
-    // 签名配置
+    // 签名配置 - 修复GitHub构建问题
     signingConfigs {
         create("release") {
             val keystorePropertiesFile = rootProject.file("keystore.properties")
@@ -51,6 +51,12 @@ android {
                 keyPassword = keystoreProperties["keyPassword"] as String
                 storeFile = file(keystoreProperties["storeFile"] as String)
                 storePassword = keystoreProperties["storePassword"] as String
+            } else {
+                // GitHub构建时使用调试签名
+                keyAlias = "androiddebugkey"
+                keyPassword = "android"
+                storeFile = file("${System.getProperty("user.home")}/.android/debug.keystore")
+                storePassword = "android"
             }
         }
     }
@@ -63,13 +69,19 @@ android {
         }
         
         release {
-            isMinifyEnabled = true
-            isShrinkResources = true
+            isMinifyEnabled = false  // 暂时关闭混淆避免构建问题
+            isShrinkResources = false
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
-            signingConfig = signingConfigs.getByName("release")
+            
+            // 根据环境选择签名配置
+            signingConfig = if (rootProject.file("keystore.properties").exists()) {
+                signingConfigs.getByName("release")
+            } else {
+                signingConfigs.getByName("debug")
+            }
             
             // 启用资源优化
             isDebuggable = false
@@ -140,14 +152,11 @@ dependencies {
     // DataStore
     implementation("androidx.datastore:datastore-preferences:1.0.0")
     
-    // 百度OCR SDK
-    implementation("com.baidu.aip:java-sdk:4.16.8") {
-        exclude(group = "com.google.guava", module = "guava")
-        exclude(group = "com.google.guava", module = "listenablefuture")
-    }
+    // 百度OCR SDK - 移除以避免构建冲突
+    // implementation("com.baidu.aip:java-sdk:4.16.8")
     
-    // 解决Guava依赖冲突
-    implementation("com.google.guava:guava:31.1-android")
+    // 使用轻量级HTTP客户端替代
+    implementation("com.squareup.okhttp3:okhttp:4.12.0")
     
     // HTTP Client for API calls
     implementation("com.squareup.retrofit2:retrofit:2.9.0")
