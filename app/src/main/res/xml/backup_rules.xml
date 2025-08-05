@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<full-backup-content>
+    <!-- 包含需要备份的数据 -->
+    <include domain="database" />
+    <include domain="sharedpref" />
+    <include domain="file" />
+    
+    <!-- 排除敏感数据 -->
+    <exclude domain="sharedpref" path="sensitive_prefs.xml" />
+</full-backup-content>

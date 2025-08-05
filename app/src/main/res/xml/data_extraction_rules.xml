@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<data-extraction-rules>
+    <cloud-backup>
+        <!-- 允许备份应用数据 -->
+        <include domain="database" />
+        <include domain="sharedpref" />
+        <include domain="file" />
+    </cloud-backup>
+    
+    <device-transfer>
+        <!-- 允许设备间传输数据 -->
+        <include domain="database" />
+        <include domain="sharedpref" />
+        <include domain="file" />
+    </device-transfer>
+</data-extraction-rules>
