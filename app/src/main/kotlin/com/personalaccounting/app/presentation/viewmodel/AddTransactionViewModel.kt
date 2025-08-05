@@ -53,7 +53,7 @@ class AddTransactionViewModel @Inject constructor(
                         selectedAccount = accountList.firstOrNull { it.isDefault } ?: accountList.firstOrNull(),
                         isLoading = false
                     )
-                }.collect { }
+                }.collect { /* Data updated in combine block */ }
             } catch (e: Exception) {
                 _uiState.value = _uiState.value.copy(
                     isLoading = false,
