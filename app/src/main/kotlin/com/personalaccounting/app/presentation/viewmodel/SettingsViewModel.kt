@@ -27,9 +27,15 @@ class SettingsViewModel @Inject constructor(
 
     private fun loadSettings() {
         viewModelScope.launch {
-            themePreferences.themeMode.collect { themeMode ->
+            try {
+                themePreferences.themeMode.collect { themeMode ->
+                    _uiState.value = _uiState.value.copy(
+                        currentThemeMode = themeMode,
+                        isLoading = false
+                    )
+                }
+            } catch (e: Exception) {
                 _uiState.value = _uiState.value.copy(
-                    currentThemeMode = themeMode,
                     isLoading = false
                 )
             }
