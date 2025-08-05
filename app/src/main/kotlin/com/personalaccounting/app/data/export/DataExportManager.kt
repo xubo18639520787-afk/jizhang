@@ -5,9 +5,9 @@ import android.net.Uri
 import com.personalaccounting.app.data.repository.TransactionRepository
 import com.personalaccounting.app.data.repository.AccountRepository
 import com.personalaccounting.app.data.repository.CategoryRepository
-import com.personalaccounting.app.domain.model.Transaction
-import com.personalaccounting.app.domain.model.Account
-import com.personalaccounting.app.domain.model.Category
+import com.personalaccounting.app.data.entity.TransactionEntity
+import com.personalaccounting.app.data.entity.AccountEntity
+import com.personalaccounting.app.data.entity.CategoryEntity
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.first
@@ -108,15 +108,15 @@ class DataExportManager @Inject constructor(
     }
     
     // 辅助方法
-    private fun transactionsToJson(transactions: List<Transaction>): JSONArray {
+    private fun transactionsToJson(transactions: List<TransactionEntity>): JSONArray {
         val array = JSONArray()
         transactions.forEach { transaction ->
             array.put(JSONObject().apply {
                 put("id", transaction.id)
                 put("amount", transaction.amount.toString())
-                put("type", transaction.type.value)
-                put("accountId", transaction.account.id)
-                put("categoryId", transaction.category.id)
+                put("type", transaction.type)
+                put("accountId", transaction.accountId)
+                put("categoryId", transaction.categoryId)
                 put("note", transaction.note)
                 put("date", dateFormat.format(transaction.date))
             })
@@ -124,13 +124,13 @@ class DataExportManager @Inject constructor(
         return array
     }
     
-    private fun accountsToJson(accounts: List<Account>): JSONArray {
+    private fun accountsToJson(accounts: List<AccountEntity>): JSONArray {
         val array = JSONArray()
         accounts.forEach { account ->
             array.put(JSONObject().apply {
                 put("id", account.id)
                 put("name", account.name)
-                put("type", account.type.value)
+                put("type", account.type)
                 put("balance", account.balance.toString())
                 put("color", account.color)
                 put("icon", account.icon)
@@ -139,13 +139,13 @@ class DataExportManager @Inject constructor(
         return array
     }
     
-    private fun categoriesToJson(categories: List<Category>): JSONArray {
+    private fun categoriesToJson(categories: List<CategoryEntity>): JSONArray {
         val array = JSONArray()
         categories.forEach { category ->
             array.put(JSONObject().apply {
                 put("id", category.id)
                 put("name", category.name)
-                put("type", category.type.value)
+                put("type", category.type)
                 put("color", category.color)
                 put("icon", category.icon)
             })
