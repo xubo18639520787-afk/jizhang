@@ -8,19 +8,6 @@ plugins {
     id("dagger.hilt.android.plugin")
     id("kotlin-parcelize")
 }
-import java.util.Properties
-import java.io.FileInputStream
-
-import java.util.Properties
-import java.io.FileInputStream
-
-plugins {
-    id("com.android.application")
-    id("org.jetbrains.kotlin.android")
-    id("kotlin-kapt")
-    id("dagger.hilt.android.plugin")
-    id("kotlin-parcelize")
-}
 
 android {
     namespace = "com.personalaccounting.app"
