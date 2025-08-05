@@ -4,7 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.personalaccounting.app.data.export.DataExportManager
 import com.personalaccounting.app.data.preferences.ThemePreferences
-import com.personalaccounting.app.domain.model.ThemeMode
+import com.personalaccounting.app.data.preferences.ThemePreferences.ThemeMode
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow

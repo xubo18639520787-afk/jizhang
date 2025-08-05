@@ -18,10 +18,10 @@ class DatabaseCallback : RoomDatabase.Callback() {
         db.execSQL("""
             INSERT INTO accounts (name, type, balance, icon, color, isDefault, createdAt, updatedAt, isDeleted) 
             VALUES 
-            ('现金', 0, 0, 'ic_cash', '#00C896', 1, ${System.currentTimeMillis()}, ${System.currentTimeMillis()}, 0),
-            ('银行卡', 1, 0, 'ic_bank_card', '#2196F3', 0, ${System.currentTimeMillis()}, ${System.currentTimeMillis()}, 0),
-            ('支付宝', 2, 0, 'ic_alipay', '#1677FF', 0, ${System.currentTimeMillis()}, ${System.currentTimeMillis()}, 0),
-            ('微信', 3, 0, 'ic_wechat', '#07C160', 0, ${System.currentTimeMillis()}, ${System.currentTimeMillis()}, 0)
+            ('现金', 0, '0.00', 'ic_cash', '#00C896', 1, ${System.currentTimeMillis()}, ${System.currentTimeMillis()}, 0),
+            ('银行卡', 1, '0.00', 'ic_bank_card', '#2196F3', 0, ${System.currentTimeMillis()}, ${System.currentTimeMillis()}, 0),
+            ('支付宝', 2, '0.00', 'ic_alipay', '#1677FF', 0, ${System.currentTimeMillis()}, ${System.currentTimeMillis()}, 0),
+            ('微信', 3, '0.00', 'ic_wechat', '#07C160', 0, ${System.currentTimeMillis()}, ${System.currentTimeMillis()}, 0)
         """)
         
         // 插入默认支出分类
