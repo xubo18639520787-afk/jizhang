@@ -14,6 +14,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.launch
 import java.math.BigDecimal
+import java.math.RoundingMode
 import java.util.Calendar
 import javax.inject.Inject
 
@@ -83,10 +84,10 @@ class StatisticsViewModel @Inject constructor(
                             category = category,
                             amount = amount,
                             percentage = if (category.type == TransactionType.INCOME && totalIncome > BigDecimal.ZERO) {
-                                amount.divide(totalIncome, 4, java.math.RoundingMode.HALF_UP)
+                                amount.divide(totalIncome, 4, RoundingMode.HALF_UP)
                                     .multiply(BigDecimal(100))
                             } else if (category.type == TransactionType.EXPENSE && totalExpense > BigDecimal.ZERO) {
-                                amount.divide(totalExpense, 4, java.math.RoundingMode.HALF_UP)
+                                amount.divide(totalExpense, 4, RoundingMode.HALF_UP)
                                     .multiply(BigDecimal(100))
                             } else {
                                 BigDecimal.ZERO
