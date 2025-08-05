@@ -65,7 +65,7 @@ class AddTransactionViewModel @Inject constructor(
 
     fun updateAmount(amount: String) {
         try {
-            val bigDecimalAmount = if (amount.isBlank()) BigDecimal.ZERO else BigDecimal(amount)
+            val bigDecimalAmount = if (amount.isBlank()) BigDecimal.ZERO else try { BigDecimal(amount) } catch (e: NumberFormatException) { BigDecimal.ZERO }
             _uiState.value = _uiState.value.copy(amount = bigDecimalAmount, amountError = null)
         } catch (e: NumberFormatException) {
             _uiState.value = _uiState.value.copy(amountError = "请输入有效的金额")

@@ -126,7 +126,7 @@ class SmartInputHelper @Inject constructor(
             if (matcher.find()) {
                 try {
                     val amountStr = matcher.group(1) ?: continue
-                    return BigDecimal(amountStr)
+                    return try { BigDecimal(amountStr) } catch (e: NumberFormatException) { BigDecimal.ZERO }
                 } catch (e: NumberFormatException) {
                     continue
                 }
@@ -165,7 +165,7 @@ class SmartInputHelper @Inject constructor(
         val amountMatch = amountRegex.find(voiceText)
         if (amountMatch != null) {
             try {
-                amount = BigDecimal(amountMatch.groupValues[1])
+                amount = try { BigDecimal(amountMatch.groupValues[1]) } catch (e: NumberFormatException) { BigDecimal.ZERO }
             } catch (e: NumberFormatException) {
                 // 忽略解析错误
             }

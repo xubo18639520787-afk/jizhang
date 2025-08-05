@@ -85,10 +85,10 @@ class StatisticsViewModel @Inject constructor(
                             amount = amount,
                             percentage = if (category.type == TransactionType.INCOME && totalIncome > BigDecimal.ZERO) {
                                 amount.divide(totalIncome, 4, RoundingMode.HALF_UP)
-                                    .multiply(BigDecimal(100))
+                                    .multiply(try { BigDecimal("100") } catch (e: NumberFormatException) { BigDecimal.ZERO })
                             } else if (category.type == TransactionType.EXPENSE && totalExpense > BigDecimal.ZERO) {
                                 amount.divide(totalExpense, 4, RoundingMode.HALF_UP)
-                                    .multiply(BigDecimal(100))
+                                    .multiply(try { BigDecimal("100") } catch (e: NumberFormatException) { BigDecimal.ZERO })
                             } else {
                                 BigDecimal.ZERO
                             }
