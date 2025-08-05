@@ -43,35 +43,35 @@ class SmartInputTestHelper @Inject constructor(
     private val ocrTestCases = listOf(
         TestCase(
             input = "超市购物小票\n合计: ¥128.50\n沃尔玛超市",
-            expectedAmount = BigDecimal("128.50"),
+            expectedAmount = try { BigDecimal("128.50") } catch (e: NumberFormatException) { BigDecimal.ZERO },
             expectedMerchant = "沃尔玛超市",
             expectedCategory = "日用品",
             description = "超市购物小票识别"
         ),
         TestCase(
             input = "餐厅账单\n总计: 89.00元\n海底捞火锅",
-            expectedAmount = BigDecimal("89.00"),
+            expectedAmount = try { BigDecimal("89.00") } catch (e: NumberFormatException) { BigDecimal.ZERO },
             expectedMerchant = "海底捞火锅",
             expectedCategory = "餐饮",
             description = "餐厅账单识别"
         ),
         TestCase(
             input = "加油站发票\n金额: 300.00\n中石化加油站",
-            expectedAmount = BigDecimal("300.00"),
+            expectedAmount = try { BigDecimal("300.00") } catch (e: NumberFormatException) { BigDecimal.ZERO },
             expectedMerchant = "中石化加油站",
             expectedCategory = "交通",
             description = "加油站发票识别"
         ),
         TestCase(
             input = "药店购药\n应付: ¥45.80\n同仁堂药店",
-            expectedAmount = BigDecimal("45.80"),
+            expectedAmount = try { BigDecimal("45.80") } catch (e: NumberFormatException) { BigDecimal.ZERO },
             expectedMerchant = "同仁堂药店",
             expectedCategory = "医疗",
             description = "药店购药识别"
         ),
         TestCase(
             input = "电影票\n票价: 58元\n万达影城",
-            expectedAmount = BigDecimal("58.00"),
+            expectedAmount = try { BigDecimal("58.00") } catch (e: NumberFormatException) { BigDecimal.ZERO },
             expectedMerchant = "万达影城",
             expectedCategory = "娱乐",
             description = "电影票识别"
@@ -84,35 +84,35 @@ class SmartInputTestHelper @Inject constructor(
     private val voiceTestCases = listOf(
         TestCase(
             input = "在超市花了一百二十八块五毛钱买日用品",
-            expectedAmount = BigDecimal("128.50"),
+            expectedAmount = try { BigDecimal("128.50") } catch (e: NumberFormatException) { BigDecimal.ZERO },
             expectedMerchant = "超市",
             expectedCategory = "日用品",
             description = "超市购物语音输入"
         ),
         TestCase(
             input = "今天在海底捞吃火锅花了八十九块钱",
-            expectedAmount = BigDecimal("89.00"),
+            expectedAmount = try { BigDecimal("89.00") } catch (e: NumberFormatException) { BigDecimal.ZERO },
             expectedMerchant = "海底捞",
             expectedCategory = "餐饮",
             description = "餐厅消费语音输入"
         ),
         TestCase(
             input = "加油站加油三百块钱",
-            expectedAmount = BigDecimal("300.00"),
+            expectedAmount = try { BigDecimal("300.00") } catch (e: NumberFormatException) { BigDecimal.ZERO },
             expectedMerchant = "加油站",
             expectedCategory = "交通",
             description = "加油消费语音输入"
         ),
         TestCase(
             input = "在药店买药花了四十五块八毛",
-            expectedAmount = BigDecimal("45.80"),
+            expectedAmount = try { BigDecimal("45.80") } catch (e: NumberFormatException) { BigDecimal.ZERO },
             expectedMerchant = "药店",
             expectedCategory = "医疗",
             description = "药店购药语音输入"
         ),
         TestCase(
             input = "看电影票价五十八元",
-            expectedAmount = BigDecimal("58.00"),
+            expectedAmount = try { BigDecimal("58.00") } catch (e: NumberFormatException) { BigDecimal.ZERO },
             expectedMerchant = "电影院",
             expectedCategory = "娱乐",
             description = "电影消费语音输入"
